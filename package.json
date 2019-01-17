@@ -1,0 +1,28 @@
+{
+  "name": "enjoyada",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bejeweled.js",
+  "scripts": {
+    "start:dev": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcmorrow/enjoyada.git"
+  },
+  "author": "@jcmorrow",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcmorrow/enjoyada/issues"
+  },
+  "homepage": "https://github.com/jcmorrow/enjoyada#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.5",
+    "babel-preset-es2015": "^6.24.1",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
