@@ -1,4 +1,4 @@
-import { randomIndex, incrementColor, COLORS } from "./utilities";
+import { differentByOne, randomColor } from "./utilities";
 
 class Board {
   constructor(rowCount) {
@@ -8,7 +8,7 @@ class Board {
     this.fillInColumn = column => {
       let newColumn = column.filter(space => space);
       for (let i = column.length - newColumn.length; i > 0; i--) {
-        newColumn.unshift(randomIndex(COLORS));
+        newColumn.unshift(randomColor());
       }
       return newColumn;
     };
@@ -18,9 +18,15 @@ class Board {
     };
 
     this.handleSelect = (column, row) => {
-      if (column >= this.rowCount || row >= this.rowCount) {
+      if (
+        column >= this.rowCount ||
+        row >= this.rowCount ||
+        row < 0 ||
+        column < 0
+      ) {
         return;
       }
+
       if (this.selected === false) {
         this.selected = [column, row];
       } else {
@@ -140,23 +146,19 @@ class Board {
 
     this.areNeighbors = (a, b) => {
       if (a[0] === b[0]) {
-        return this.differentByOne(a[1], b[1]);
+        return differentByOne(a[1], b[1]);
       }
       if (a[1] === b[1]) {
-        return this.differentByOne(a[0], b[0]);
+        return differentByOne(a[0], b[0]);
       }
       return false;
     };
 
-    this.differentByOne = (a, b) => Math.abs(a - b) === 1;
-
     this.spaces = new Array(this.rowCount)
       .fill(undefined)
       .map(() =>
-        new Array(this.rowCount).fill(undefined).map(() => randomIndex(COLORS))
+        new Array(this.rowCount).fill(undefined).map(() => randomColor())
       );
-
-    let i = 0;
 
     this.resolveAllExplosions();
   }
