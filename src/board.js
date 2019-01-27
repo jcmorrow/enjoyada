@@ -3,49 +3,89 @@ import { randomIndex, incrementColor, COLORS } from "./utilities";
 class Board {
   constructor(rowCount) {
     this.rowCount = rowCount;
+    this.selected = false;
+
+    this.fillInColumn = column => {
+      let newColumn = column.filter(space => space);
+      for (let i = column.length - newColumn.length; i > 0; i--) {
+        newColumn.unshift(randomIndex(COLORS));
+      }
+      return newColumn;
+    };
+
+    this.fillIn = () => {
+      this.spaces = this.spaces.map(column => this.fillInColumn(column));
+    };
 
     this.handleSelect = (column, row) => {
-      console.log(this.spaces);
       if (column >= this.rowCount || row >= this.rowCount) {
         return;
       }
-      if (this.selected) {
-        this.swap([column, row], this.selected);
-        this.selected = false;
-      } else {
+      if (this.selected === false) {
         this.selected = [column, row];
+      } else {
+        if (this.adjacent([column, row], this.selected)) {
+          this.swap([column, row], this.selected);
+        }
+        this.selected = false;
       }
     };
 
-    this.checkForExplosions = spaces => {
+    this.adjacent = (a, b) => {
+      if (a[0] === b[0]) {
+        if (Math.abs(a[1] - b[1]) === 1) {
+          return true;
+        }
+      } else if (a[1] === b[1]) {
+        if (Math.abs(a[0] - b[0]) === 1) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    this.checkForExplosions = (spaces, vertical = false) => {
       let lastColor = false;
-      let colorStreak = 0;
+      let currentMatch = [];
       const matches = [];
 
-      const appendToMatches = (colorStreak, columnIndex, rowIndex) => {
-        if (colorStreak >= 3) {
-          matches.push([columnIndex, rowIndex]);
+      const appendToMatches = match => {
+        if (match.length >= 3) {
+          matches.push(match);
         }
       };
 
       spaces.map((column, columnIndex) => {
         lastColor = false;
+        currentMatch = [];
         column.map((row, rowIndex) => {
           if (lastColor === false) {
             lastColor = row;
-            colorStreak = 1;
+            if (vertical) {
+              currentMatch.push([rowIndex, columnIndex]);
+            } else {
+              currentMatch.push([columnIndex, rowIndex]);
+            }
             return;
           } else {
             if (lastColor === row) {
-              colorStreak++;
+              if (vertical) {
+                currentMatch.push([rowIndex, columnIndex]);
+              } else {
+                currentMatch.push([columnIndex, rowIndex]);
+              }
             } else {
-              appendToMatches(colorStreak, columnIndex, rowIndex - 1);
+              appendToMatches(currentMatch, columnIndex, rowIndex - 1);
+              if (vertical) {
+                currentMatch = [[rowIndex, columnIndex]];
+              } else {
+                currentMatch = [[columnIndex, rowIndex]];
+              }
               lastColor = row;
-              colorStreak = 1;
             }
           }
           if (rowIndex === this.rowCount - 1) {
-            appendToMatches(colorStreak, columnIndex, rowIndex);
+            appendToMatches(currentMatch, columnIndex, rowIndex);
           }
         });
       });
@@ -67,24 +107,35 @@ class Board {
 
     this.checkHorizontal = () => this.checkForExplosions(this.spaces);
 
-    this.checkVertical = () => this.checkForExplosions(this.pivot());
+    this.checkVertical = () => this.checkForExplosions(this.pivot(), 1);
+
+    this.resolveAllExplosions = () => {
+      let exploded = false;
+      while (this.checkHorizontal().length || this.checkVertical().length) {
+        exploded = true;
+        this.resolveExplosions(this.checkHorizontal());
+        this.resolveExplosions(this.checkVertical());
+      }
+      return exploded;
+    };
 
     this.resolveExplosions = explosions => {
       explosions.forEach(explosion => {
-        const color = this.spaces[explosion[0]][explosion[1]];
-        let row = explosion[1];
-        while (row >= 0 && this.spaces[explosion[0]][row] === color) {
-          this.spaces[explosion[0]][row] = false;
-          row--;
-        }
+        explosion.forEach(explosionSpace => {
+          this.spaces[explosionSpace[0]][explosionSpace[1]] = false;
+        });
       });
+      this.fillIn();
     };
 
     this.swap = (a, b) => {
       const tmpA = this.spaces[a[0]][a[1]];
       this.spaces[a[0]][a[1]] = this.spaces[b[0]][b[1]];
       this.spaces[b[0]][b[1]] = tmpA;
-      this.resolveExplosions(this.checkHorizontal());
+      if (!this.resolveAllExplosions()) {
+        this.spaces[b[0]][b[1]] = this.spaces[a[0]][a[1]];
+        this.spaces[a[0]][a[1]] = tmpA;
+      }
     };
 
     this.areNeighbors = (a, b) => {
@@ -105,21 +156,9 @@ class Board {
         new Array(this.rowCount).fill(undefined).map(() => randomIndex(COLORS))
       );
 
-    while (this.checkHorizontal().length || this.checkVertical().length) {
-      this.checkHorizontal().map(space => {
-        this.spaces[space[0]][space[1]] = incrementColor(
-          this.spaces[space[0]][space[1]]
-        );
-      });
-      this.checkVertical().map(space => {
-        this.spaces[space[1]][space[0]] = incrementColor(
-          this.spaces[space[1]][space[0]]
-        );
-      });
-    }
+    let i = 0;
 
-    console.log(this.spaces);
-    console.log(this.pivot());
+    this.resolveAllExplosions();
   }
 }
 

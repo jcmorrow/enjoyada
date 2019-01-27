@@ -43,11 +43,11 @@ class CanvasRenderer {
       this.context.clearRect(0, 0, 500, 500);
       this.board.spaces.map((column, columnIndex) => {
         column.map((row, rowIndex) => {
-          this.drawCube(columnIndex, rowIndex, COLORS[row]);
+          this.drawCube(rowIndex, columnIndex, COLORS[row]);
         });
       });
       if (this.board.selected) {
-        this.drawOutline(this.board.selected[0], this.board.selected[1]);
+        this.drawOutline(this.board.selected[1], this.board.selected[0]);
       }
       window.requestAnimationFrame(this.drawBoard);
     };
@@ -56,7 +56,7 @@ class CanvasRenderer {
       const rowIndex = Math.floor(e.offsetX / CUBE_SIZE);
       const columnIndex = Math.floor(e.offsetY / CUBE_SIZE);
 
-      board.handleSelect(columnIndex, rowIndex);
+      board.handleSelect(rowIndex, columnIndex);
     };
 
     this.canvas.onclick = this.handleClick;
