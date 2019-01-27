@@ -4,7 +4,7 @@
   "description": "",
   "main": "bejeweled.js",
   "scripts": {
-    "start:dev": "webpack-dev-server"
+    "start:dev": "webpack-dev-server --open"
   },
   "repository": {
     "type": "git",

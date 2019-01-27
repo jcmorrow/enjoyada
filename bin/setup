@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+npm install --only=dev
+npm run start:dev
+open http://localhost:8080
