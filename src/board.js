@@ -39,15 +39,15 @@ class Board {
 
     this.adjacent = (a, b) => {
       if (a[0] === b[0]) {
-        if (Math.abs(a[1] - b[1]) === 1) {
-          return true;
-        }
+        return differentByOne(a[1], b[1]);
       } else if (a[1] === b[1]) {
-        if (Math.abs(a[0] - b[0]) === 1) {
-          return true;
-        }
+        return differentByOne(a[0], b[0]);
       }
       return false;
+    };
+
+    this.pivotCoordinates = coordinates => {
+      return [coordinates[1], coordinates[0]];
     };
 
     this.checkForExplosions = (spaces, vertical = false) => {
@@ -57,6 +57,9 @@ class Board {
 
       const appendToMatches = match => {
         if (match.length >= 3) {
+          if (vertical) {
+            match = match.map(this.pivotCoordinates);
+          }
           matches.push(match);
         }
       };
@@ -66,32 +69,26 @@ class Board {
         currentMatch = [];
         column.map((row, rowIndex) => {
           if (lastColor === false) {
+            // first jewel of the row
             lastColor = row;
-            if (vertical) {
-              currentMatch.push([rowIndex, columnIndex]);
-            } else {
-              currentMatch.push([columnIndex, rowIndex]);
-            }
+            currentMatch.push([columnIndex, rowIndex]);
             return;
           } else {
+            // not first jewel of the row, which means we have comparing to do
             if (lastColor === row) {
-              if (vertical) {
-                currentMatch.push([rowIndex, columnIndex]);
-              } else {
-                currentMatch.push([columnIndex, rowIndex]);
-              }
+              // we are still matching so far!
+              currentMatch.push([columnIndex, rowIndex]);
             } else {
-              appendToMatches(currentMatch, columnIndex, rowIndex - 1);
-              if (vertical) {
-                currentMatch = [[rowIndex, columnIndex]];
-              } else {
-                currentMatch = [[columnIndex, rowIndex]];
-              }
+              // our match has ended! Let's try and add everything that has
+              // matched so far and restart
+              appendToMatches(currentMatch);
+              currentMatch = [[columnIndex, rowIndex]];
               lastColor = row;
             }
           }
           if (rowIndex === this.rowCount - 1) {
-            appendToMatches(currentMatch, columnIndex, rowIndex);
+            // last jewel of the row, let's try and add a match no matter what!
+            appendToMatches(currentMatch);
           }
         });
       });
@@ -139,6 +136,7 @@ class Board {
       this.spaces[a[0]][a[1]] = this.spaces[b[0]][b[1]];
       this.spaces[b[0]][b[1]] = tmpA;
       if (!this.resolveAllExplosions()) {
+        // if nothing exploded, swap back
         this.spaces[b[0]][b[1]] = this.spaces[a[0]][a[1]];
         this.spaces[a[0]][a[1]] = tmpA;
       }
@@ -154,6 +152,8 @@ class Board {
       return false;
     };
 
+    // we create the board for the first time by randomly filling it and then
+    // resolving any explosions that got created by the randomness
     this.spaces = new Array(this.rowCount)
       .fill(undefined)
       .map(() =>
