@@ -5,4 +5,4 @@ const randomColor = () => randomIndex(COLORS);
 
 const differentByOne = (a, b) => Math.abs(a - b) === 1;
 
-export { differentByOne, randomColor };
+export { COLORS, differentByOne, randomColor };

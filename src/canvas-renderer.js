@@ -1,4 +1,4 @@
-const COLORS = ["blue", "green", "orange", "purple", "red", "white", "yellow"];
+import { COLORS } from "./utilities";
 const CUBE_SIZE = 50;
 
 class CanvasRenderer {
