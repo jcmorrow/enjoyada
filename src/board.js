@@ -1,5 +1,7 @@
 import { differentByOne, randomColor } from "./utilities";
 
+const MINIMUM_EXPLOSION_SIZE = 3;
+
 class Board {
   constructor(rowCount) {
     this.rowCount = rowCount;
@@ -14,7 +16,7 @@ class Board {
     };
 
     this.fillIn = () => {
-      this.spaces = this.spaces.map(column => this.fillInColumn(column));
+      this.columns = this.columns.map(column => this.fillInColumn(column));
     };
 
     this.handleSelect = (column, row) => {
@@ -27,7 +29,7 @@ class Board {
         return;
       }
 
-      if (this.selected === false) {
+      if (!this.selected) {
         this.selected = [column, row];
       } else {
         if (this.adjacent([column, row], this.selected)) {
@@ -50,13 +52,13 @@ class Board {
       return [coordinates[1], coordinates[0]];
     };
 
-    this.checkForExplosions = (spaces, vertical = false) => {
+    this.checkForExplosions = (columns, vertical = false) => {
       let lastColor = false;
       let currentMatch = [];
       const matches = [];
 
       const appendToMatches = match => {
-        if (match.length >= 3) {
+        if (match.length >= MINIMUM_EXPLOSION_SIZE) {
           if (vertical) {
             match = match.map(this.pivotCoordinates);
           }
@@ -64,7 +66,7 @@ class Board {
         }
       };
 
-      spaces.map((column, columnIndex) => {
+      columns.map((column, columnIndex) => {
         lastColor = false;
         currentMatch = [];
         column.map((row, rowIndex) => {
@@ -102,13 +104,13 @@ class Board {
         .map(() => new Array(this.rowCount).fill(undefined));
       for (let row = 0; row < this.rowCount; row++) {
         for (let col = 0; col < this.rowCount; col++) {
-          pivoted[col][row] = this.spaces[row][col];
+          pivoted[col][row] = this.columns[row][col];
         }
       }
       return pivoted;
     };
 
-    this.checkHorizontal = () => this.checkForExplosions(this.spaces);
+    this.checkHorizontal = () => this.checkForExplosions(this.columns);
 
     this.checkVertical = () => this.checkForExplosions(this.pivot(), 1);
 
@@ -125,20 +127,20 @@ class Board {
     this.resolveExplosions = explosions => {
       explosions.forEach(explosion => {
         explosion.forEach(explosionSpace => {
-          this.spaces[explosionSpace[0]][explosionSpace[1]] = false;
+          this.columns[explosionSpace[0]][explosionSpace[1]] = false;
         });
       });
       this.fillIn();
     };
 
     this.swap = (a, b) => {
-      const tmpA = this.spaces[a[0]][a[1]];
-      this.spaces[a[0]][a[1]] = this.spaces[b[0]][b[1]];
-      this.spaces[b[0]][b[1]] = tmpA;
+      const tmpA = this.columns[a[0]][a[1]];
+      this.columns[a[0]][a[1]] = this.columns[b[0]][b[1]];
+      this.columns[b[0]][b[1]] = tmpA;
       if (!this.resolveAllExplosions()) {
         // if nothing exploded, swap back
-        this.spaces[b[0]][b[1]] = this.spaces[a[0]][a[1]];
-        this.spaces[a[0]][a[1]] = tmpA;
+        this.columns[b[0]][b[1]] = this.columns[a[0]][a[1]];
+        this.columns[a[0]][a[1]] = tmpA;
       }
     };
 
@@ -154,7 +156,7 @@ class Board {
 
     // we create the board for the first time by randomly filling it and then
     // resolving any explosions that got created by the randomness
-    this.spaces = new Array(this.rowCount)
+    this.columns = new Array(this.rowCount)
       .fill(undefined)
       .map(() =>
         new Array(this.rowCount).fill(undefined).map(() => randomColor())

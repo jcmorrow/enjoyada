@@ -41,7 +41,7 @@ class CanvasRenderer {
 
     this.drawBoard = () => {
       this.context.clearRect(0, 0, 500, 500);
-      this.board.spaces.map((column, columnIndex) => {
+      this.board.columns.map((column, columnIndex) => {
         column.map((row, rowIndex) => {
           this.drawCube(rowIndex, columnIndex, COLORS[row]);
         });
